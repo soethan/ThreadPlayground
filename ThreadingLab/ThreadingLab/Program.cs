@@ -205,12 +205,12 @@ namespace ThreadingLab
             Console.WriteLine("Task 1 completed: {0}", eTask1.IsCompleted);//true
             Console.WriteLine("Task 1 faulted: {0}", eTask1.IsFaulted);//false
             Console.WriteLine("Task 1 cancelled: {0}", eTask1.IsCanceled);//true
-            Console.WriteLine(task1.Exception);
+            Console.WriteLine(eTask1.Exception);
             // write out the details of the task exception
             Console.WriteLine("Task 2 completed: {0}", eTask2.IsCompleted);//true
             Console.WriteLine("Task 2 faulted: {0}", eTask2.IsFaulted);//true
             Console.WriteLine("Task 2 cancelled: {0}", eTask2.IsCanceled);//false
-            Console.WriteLine(task2.Exception);
+            Console.WriteLine(eTask2.Exception);
             */            
             #endregion
 

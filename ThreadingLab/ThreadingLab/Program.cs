@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ThreadingLab.Models;
 
@@ -119,12 +120,15 @@ namespace ThreadingLab
                 {
                     sum += i;
                 }
+                Console.WriteLine("Inside Task Body...Task Unique int value=" + Task.CurrentId);
                 return sum;
             });
 
             //Main thread will wait at tfTask1.Result until tfTask1 finishes execution and its return statement is executed.
             Console.WriteLine("Task.Factory task1.Result = {0};", tfTask1.Result);
             Console.WriteLine("Task.Factory task1 Ends...");
+
+            Console.WriteLine("Outside Task Body...Task Unique int value=" + Task.CurrentId);
 
             var tfTask2 = Task.Factory.StartNew<int>((objParam) =>
             {
@@ -134,12 +138,80 @@ namespace ThreadingLab
                 {
                     sum += i;
                 }
+                Console.WriteLine("Inside Task Body...Task Unique int value=" + Task.CurrentId);
                 return sum;
             }, 200);
 
             Console.WriteLine("Task.Factory task2.Result = {0};", tfTask2.Result);
             Console.WriteLine("Task.Factory task2 Ends...");
 
+            #endregion
+
+            #region Exception Handling
+            /*
+            // create the cancellation token source and the token
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            CancellationToken token = tokenSource.Token;
+
+            // create a task that waits on the cancellation token
+            Task eTask1 = new Task(() => {
+                // wait forever or until the token is cancelled
+                token.WaitHandle.WaitOne(-1);
+                // throw an exception to acknowledge the cancellation
+                throw new OperationCanceledException(token);
+                
+            }, token);
+
+            // create a task that throws an exception
+            Task eTask2 = new Task(() => {
+                throw new NullReferenceException();
+            });
+
+            eTask1.Start(); 
+            eTask2.Start();
+            // cancel the token
+            tokenSource.Cancel();
+            // wait on the tasks and catch any exceptions
+            try
+            {
+                Task.WaitAll(eTask1, eTask2);
+            }
+            catch (AggregateException ex)
+            {
+                // iterate through the inner exceptions using
+                // the handle method
+                ex.Handle(
+                    (inner) =>
+                    {
+                        //It seems resolved by unchecking Tools | Options | Debugging | General "Enable Just My Code".
+                        if (inner is OperationCanceledException)
+                        {
+                            Console.WriteLine("OperationCanceledException handled...");
+                            return true;
+                        }
+                        else
+                        {
+                            // this is an exception we don't know how
+                            // to handle, so return false
+                            //return false;
+                            Console.WriteLine("Other Exceptions handled...");
+                            return true;
+                        }
+                    }
+                );
+            }
+             
+            // write out the details of the task exception
+            Console.WriteLine("Task 1 completed: {0}", eTask1.IsCompleted);//true
+            Console.WriteLine("Task 1 faulted: {0}", eTask1.IsFaulted);//false
+            Console.WriteLine("Task 1 cancelled: {0}", eTask1.IsCanceled);//true
+            Console.WriteLine(task1.Exception);
+            // write out the details of the task exception
+            Console.WriteLine("Task 2 completed: {0}", eTask2.IsCompleted);//true
+            Console.WriteLine("Task 2 faulted: {0}", eTask2.IsFaulted);//true
+            Console.WriteLine("Task 2 cancelled: {0}", eTask2.IsCanceled);//false
+            Console.WriteLine(task2.Exception);
+            */            
             #endregion
 
             Console.Read();

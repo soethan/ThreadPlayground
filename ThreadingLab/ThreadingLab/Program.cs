@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -331,6 +332,75 @@ namespace ThreadingLab
 
             #endregion
 
+            #region Producer/Consumer Pattern
+
+            Console.WriteLine("======= Producer/Consumer Pattern =======");
+
+            //System.Collections.Concurrent.BlockingCollection combines the collection and the synchronization primitive into one class, 
+            //which makes it ideal for implementing the producer/consumer pattern.
+            var blockingCollection = new BlockingCollection<Deposit>();
+            // create and start the producers, which will generate deposits and place them into the collection
+            Task[] producers = new Task[3];
+            for (int i = 0; i < 3; i++)
+            {
+                producers[i] = Task.Factory.StartNew(() => {
+                    // create a series of deposits
+                    for (int j = 0; j < 5; j++)
+                    {
+                        var deposit = new Deposit { Amount = 100 };
+                        blockingCollection.Add(deposit);
+                        Console.WriteLine("+ Producer adds deposit");
+                    }
+                });
+            }
+
+            // create a many to one continuation that will signal the end of production to the consumer
+            Task.Factory.ContinueWhenAll(producers, antecedents => {
+                // signal that production has ended
+                Console.WriteLine("Signalling production end");
+                blockingCollection.CompleteAdding();
+            });
+
+            Console.WriteLine("Before consumer starts");
+
+            var accountPC = new BankAccount();
+            // create the consumer, which will update the balance based on the deposits
+            /*
+            Task consumer = Task.Factory.StartNew(() => {
+                Console.WriteLine("consumer waiting...");
+                while (!blockingCollection.IsCompleted)
+                {
+                    Deposit deposit;
+                    // try to take the next item
+                    if (blockingCollection.TryTake(out deposit))
+                    {
+                        // update the balance with the transfer amount
+                        accountPC.Balance += deposit.Amount;
+                        Console.WriteLine("- Consumer processes deposit");
+                    }
+                }
+                // print out the final balance
+                Console.WriteLine("Final Balance: {0}", accountPC.Balance);
+            });
+            */
+            Task<int> consumer1 = Task.Factory.StartNew<int>((objParam) => {
+                var balance = (int)objParam;
+                return ProcessProducerOutput(blockingCollection, balance, 1);
+            }, accountPC.Balance);
+
+            Task<int> consumer2 = Task.Factory.StartNew<int>((objParam) => {
+                var balance = (int)objParam;
+                return ProcessProducerOutput(blockingCollection, balance, 2);
+            }, accountPC.Balance);
+
+            // wait for the consumers to finish
+            Task.WaitAll(consumer1, consumer2);
+            Console.WriteLine("Final Balance: {0}", consumer1.Result + consumer2.Result);
+
+            Console.WriteLine("==================================================");
+
+            #endregion
+
             int[] a1 = new int[] { 1, 2, 3 };
             int[] a2 = new int[] { 3, 2, 1 };
             int[] a3 = new int[] { 1, 2, 3 };
@@ -338,6 +408,25 @@ namespace ThreadingLab
             Console.WriteLine(a1.SequenceEqual(a3));//true
 
             Console.Read();
+        }
+
+        private static int ProcessProducerOutput(BlockingCollection<Deposit> blockingCollection, int balance, int consumerId)
+        {
+            Console.WriteLine("consumer waiting...");
+            while (!blockingCollection.IsCompleted)
+            {
+                Deposit deposit;
+                // try to take the next item
+                if (blockingCollection.TryTake(out deposit))
+                {
+                    // update the balance with the transfer amount
+                    balance += deposit.Amount;
+                    Console.WriteLine("- Consumer{0} processes deposit", consumerId);
+                }
+            }
+
+            Console.WriteLine("Interim Balance: {0}", balance);
+            return balance;
         }
 
         private static void PrintMessage(object obj)

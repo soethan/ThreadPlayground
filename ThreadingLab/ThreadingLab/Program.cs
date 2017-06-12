@@ -413,6 +413,7 @@ namespace ThreadingLab
         private static int ProcessProducerOutput(BlockingCollection<Deposit> blockingCollection, int balance, int consumerId)
         {
             Console.WriteLine("consumer waiting...");
+            //Return true if CompleteAdding() has been called and there are no items in the collection
             while (!blockingCollection.IsCompleted)
             {
                 Deposit deposit;

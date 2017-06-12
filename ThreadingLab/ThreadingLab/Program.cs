@@ -281,9 +281,61 @@ namespace ThreadingLab
             rootTask.Start();
 
             Task.WaitAll(conTask2, resultTask2);
+
             Console.WriteLine("==================================================");
 
             #endregion
+
+            #region Many to One Continuation
+
+            Console.WriteLine("======= Many to One Task Continuation =======");
+
+            var account2 = new BankAccount();
+            var tasks = new Task<int>[10];
+
+            for (int i = 0; i < 10; i++)
+            {
+                tasks[i] = new Task<int>(
+                    (objParam) => {
+                        int isolatedBalance = (int)objParam;
+                        for (int j = 0; j < 1000; j++)
+                        {
+                            isolatedBalance++;
+                        }
+                        return isolatedBalance;
+                    },
+                    account2.Balance
+                );
+            }
+
+            // set up a multitask continuation
+            Task continuation = Task.Factory.ContinueWhenAll<int>(tasks, antecedents => {
+                // run through and sum the individual balances
+                foreach (Task<int> t in antecedents)
+                {
+                    account2.Balance += t.Result;
+                }
+            });
+            // start the antecedent tasks
+            foreach (Task t in tasks)
+            {
+                t.Start();
+            }
+
+            // wait for the contination task to complete
+            continuation.Wait();
+            // write out the counter value
+            Console.WriteLine("Expected value {0}, Balance: {1}", 10000, account2.Balance);
+
+            Console.WriteLine("==================================================");
+
+            #endregion
+
+            int[] a1 = new int[] { 1, 2, 3 };
+            int[] a2 = new int[] { 3, 2, 1 };
+            int[] a3 = new int[] { 1, 2, 3 };
+            Console.WriteLine(a1.SequenceEqual(a2));//false
+            Console.WriteLine(a1.SequenceEqual(a3));//true
 
             Console.Read();
         }

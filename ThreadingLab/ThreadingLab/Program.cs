@@ -74,13 +74,14 @@ namespace ThreadingLab
 
             Task.WaitAll(t1, t2, t3);
             Console.WriteLine("==================================");
-            
+
             #endregion
 
             #region Task Result
 
+            Console.WriteLine("======= Task Result =======");
             //1. With new Task().Start
-                        
+
             var task1 = new Task<int>(() => {
                 int sum = 0;
                 for(int i = 0; i < 100; i++)
@@ -145,10 +146,13 @@ namespace ThreadingLab
             Console.WriteLine("Task.Factory task2.Result = {0};", tfTask2.Result);
             Console.WriteLine("Task.Factory task2 Ends...");
 
+            Console.WriteLine("==================================");
+
             #endregion
 
             #region Exception Handling
             /*
+            Console.WriteLine("======= Exception Handling =======");
             // create the cancellation token source and the token
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
@@ -211,7 +215,74 @@ namespace ThreadingLab
             Console.WriteLine("Task 2 faulted: {0}", eTask2.IsFaulted);//true
             Console.WriteLine("Task 2 cancelled: {0}", eTask2.IsCanceled);//false
             Console.WriteLine(eTask2.Exception);
-            */            
+
+            Console.WriteLine("==================================");
+            */
+            #endregion
+
+            #region Task Continuation
+
+            Console.WriteLine("======= Task Continuation =======");
+
+            var firstTask = new Task<BankAccount>(() => {
+                var account = new BankAccount();
+                for (int i = 0; i < 1000; i++)
+                {
+                    account.Balance++;
+                }
+                return account;
+            });
+
+            var continuedTask = firstTask.ContinueWith<int>((Task<BankAccount> antecedent) => {
+                Console.WriteLine("Interim Balance: {0}", antecedent.Result.Balance);
+                return antecedent.Result.Balance * 2;
+            });
+
+            firstTask.Start();
+            Console.WriteLine("Final balance: {0}", continuedTask.Result);
+
+            Console.WriteLine("==================================");
+
+            #endregion
+
+            #region One to Many Task Continuation
+
+            Console.WriteLine("======= One to Many Task Continuation =======");
+
+            var rootTask = new Task<BankAccount>(() => {
+                BankAccount account = new BankAccount();
+                for (int i = 0; i < 1000; i++)
+                {
+                    account.Balance++;
+                }
+                return account;
+            });
+
+            // create the second-generation task, which will double the antecdent balance
+            var conTask1 = rootTask.ContinueWith<int>((Task<BankAccount> antecedent) => {
+                Console.WriteLine("Interim Balance 1: {0}", antecedent.Result.Balance);
+                return antecedent.Result.Balance * 2;
+            });
+            // create a third-generation task, which will print out the result
+            Task conTask2 = conTask1.ContinueWith((Task<int> antecedent) => {
+                Console.WriteLine("Final Balance 1: {0}", antecedent.Result);
+            });
+
+            // create a second and third-generation task in one step
+            var resultTask2 = rootTask
+                .ContinueWith<int>((Task<BankAccount> antecedent) => {
+                    Console.WriteLine("Interim Balance 2: {0}", antecedent.Result.Balance);
+                    return antecedent.Result.Balance / 2;
+                })
+                .ContinueWith((Task<int> antecedent) => {
+                    Console.WriteLine("Final Balance 2: {0}", antecedent.Result);
+                });
+
+            rootTask.Start();
+
+            Task.WaitAll(conTask2, resultTask2);
+            Console.WriteLine("==================================================");
+
             #endregion
 
             Console.Read();

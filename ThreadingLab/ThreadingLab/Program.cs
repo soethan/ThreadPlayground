@@ -426,7 +426,7 @@ namespace ThreadingLab
                 }
             }
 
-            Console.WriteLine("Interim Balance: {0}", balance);
+            Console.WriteLine("Interim Balance from Consumer{1}: {0}", balance, consumerId);
             return balance;
         }
 

@@ -354,7 +354,7 @@ namespace ThreadingLab
                 });
             }
 
-            // create a many to one continuation that will signal the end of production to the consumer
+            // create a many-to-one continuation that will signal the end of production to the consumer
             Task.Factory.ContinueWhenAll(producers, antecedents => {
                 // signal that production has ended
                 Console.WriteLine("Signalling production end");
@@ -412,7 +412,7 @@ namespace ThreadingLab
 
         private static int ProcessProducerOutput(BlockingCollection<Deposit> blockingCollection, int balance, int consumerId)
         {
-            Console.WriteLine("consumer waiting...");
+            Console.WriteLine(string.Format("consumer{0} waiting...", consumerId));
             //Return true if CompleteAdding() has been called and there are no items in the collection
             while (!blockingCollection.IsCompleted)
             {

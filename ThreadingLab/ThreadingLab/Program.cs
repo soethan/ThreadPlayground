@@ -11,6 +11,8 @@ namespace ThreadingLab
 {
     class Program
     {
+        private static object _ConsoleLock = new object();
+
         static void Main(string[] args)
         {
             #region Pass Parameter to Task
@@ -334,7 +336,7 @@ namespace ThreadingLab
 
             #region Producer/Consumer Pattern
 
-            Console.WriteLine("======= Producer/Consumer Pattern =======");
+            ConsoleWriteWithColor("======= Producer/Consumer Pattern =======");
 
             //System.Collections.Concurrent.BlockingCollection combines the collection and the synchronization primitive into one class, 
             //which makes it ideal for implementing the producer/consumer pattern.
@@ -349,7 +351,7 @@ namespace ThreadingLab
                     {
                         var deposit = new Deposit { Amount = 100 };
                         blockingCollection.Add(deposit);
-                        Console.WriteLine("+ Producer adds deposit");
+                        ConsoleWriteWithColor("+ Producer adds deposit", ConsoleColor.Green);
                     }
                 });
             }
@@ -357,11 +359,11 @@ namespace ThreadingLab
             // create a many-to-one continuation that will signal the end of production to the consumer
             Task.Factory.ContinueWhenAll(producers, antecedents => {
                 // signal that production has ended
-                Console.WriteLine("Signalling production end");
+                ConsoleWriteWithColor("Signalling production end", ConsoleColor.Yellow);
                 blockingCollection.CompleteAdding();
             });
 
-            Console.WriteLine("Before consumer starts");
+            ConsoleWriteWithColor("Before consumer starts");
 
             var accountPC = new BankAccount();
             // create the consumer, which will update the balance based on the deposits
@@ -395,9 +397,9 @@ namespace ThreadingLab
 
             // wait for the consumers to finish
             Task.WaitAll(consumer1, consumer2);
-            Console.WriteLine("Final Balance: {0}", consumer1.Result + consumer2.Result);
+            ConsoleWriteWithColor(string.Format("Final Balance: {0}", consumer1.Result + consumer2.Result));
 
-            Console.WriteLine("==================================================");
+            ConsoleWriteWithColor("==================================================");
 
             #endregion
 
@@ -412,7 +414,7 @@ namespace ThreadingLab
 
         private static int ProcessProducerOutput(BlockingCollection<Deposit> blockingCollection, int balance, int consumerId)
         {
-            Console.WriteLine(string.Format("consumer{0} waiting...", consumerId));
+            ConsoleWriteWithColor(string.Format("consumer{0} waiting...", consumerId));
             //Return true if CompleteAdding() has been called and there are no items in the collection
             while (!blockingCollection.IsCompleted)
             {
@@ -422,18 +424,28 @@ namespace ThreadingLab
                 {
                     // update the balance with the transfer amount
                     balance += deposit.Amount;
-                    Console.WriteLine("- Consumer{0} processes deposit", consumerId);
+                    ConsoleWriteWithColor(string.Format("- Consumer{0} processes deposit", consumerId), ConsoleColor.Red);
                 }
             }
 
-            Console.WriteLine("Interim Balance from Consumer{1}: {0}", balance, consumerId);
+            ConsoleWriteWithColor(string.Format("Interim Balance from Consumer{1}: {0}", balance, consumerId));
             return balance;
         }
 
         private static void PrintMessage(object obj)
         {
             var person = obj as Person;
-            Console.WriteLine(string.Format("Id={0};Name={1};", person.Id.ToString(), person.Name));
+            ConsoleWriteWithColor(string.Format("Id={0};Name={1};", person.Id.ToString(), person.Name));
+        }
+
+        private static void ConsoleWriteWithColor(string text, ConsoleColor textColor = ConsoleColor.White)
+        {
+            lock (_ConsoleLock)
+            {
+                Console.ForegroundColor = textColor;
+                Console.WriteLine(text);
+                Console.ResetColor();
+            }
         }
     }
 }

@@ -428,6 +428,7 @@ namespace ThreadingLab
             Console.WriteLine(a1.SequenceEqual(a3));//true
 
             Console.Read();
+            mutex.ReleaseMutex();
         }
 
         private static int ProcessProducerOutput(BlockingCollection<Deposit> blockingCollection, int balance, int consumerId)

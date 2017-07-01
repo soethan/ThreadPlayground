@@ -1,20 +1,38 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ThreadingLab.Models;
 
 namespace ThreadingLab
 {
+    //Mutex to prevent multiple instances running at the same time: 
+    //http://www.c-sharpcorner.com/UploadFile/f9f215/how-to-restrict-the-application-to-just-one-instance/
     class Program
     {
         private static object _ConsoleLock = new object();
+        private static Mutex mutex = null;
 
         static void Main(string[] args)
         {
+            #region Mutex
+
+            string appName = Process.GetCurrentProcess().ProcessName;
+            bool createdNew;
+
+            mutex = new Mutex(true, appName, out createdNew);
+
+            if (!createdNew)
+            {
+                ConsoleWriteWithColor(appName + " is already running! Exiting the application.", ConsoleColor.Red);
+                Console.ReadKey();
+                return;
+            }
+
+            #endregion
+            
             #region Pass Parameter to Task
 
             Console.WriteLine("======= Pass Parameter to Task =======");

@@ -89,7 +89,7 @@ namespace ThreadingLab
 
             t5.Start();
 
-            //Main thread will wait at t4.Result until t4 finishes execution and its return statement is executed.
+            //Main thread will wait at t5.Result until t5 finishes execution and its return statement is executed.
             Console.WriteLine("t5.Result = {0};", t5.Result);
             Console.WriteLine("t5 Ends...");
 
@@ -266,7 +266,7 @@ namespace ThreadingLab
 
             #endregion
 
-            #region One to Many Task Continuation
+            #region One-to-Many Task Continuation
 
             Console.WriteLine("======= One to Many Task Continuation =======");
 
@@ -307,7 +307,7 @@ namespace ThreadingLab
 
             #endregion
 
-            #region Many to One Continuation
+            #region Many-to-One Continuation
 
             Console.WriteLine("======= Many to One Task Continuation =======");
 

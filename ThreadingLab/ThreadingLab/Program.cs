@@ -10,12 +10,12 @@ namespace ThreadingLab
 {
     //Mutex to prevent multiple instances running at the same time: 
     //http://www.c-sharpcorner.com/UploadFile/f9f215/how-to-restrict-the-application-to-just-one-instance/
-    class Program
+    class Program2
     {
         private static object _ConsoleLock = new object();
         private static Mutex mutex = null;
 
-        static void Main(string[] args)
+        static void Main2(string[] args)
         {
             #region Mutex
 

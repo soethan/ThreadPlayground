@@ -9,12 +9,12 @@ using ThreadingLab.Models;
 
 namespace ThreadingLab
 {
-    class Program
+    class Program1
     {
         private static object _ConsoleLock = new object();
         private static object _longRunningTasksLock = new object();
 
-        static void Main(string[] args)
+        static void Main1(string[] args)
         {
             #region Long Running Tasks
             

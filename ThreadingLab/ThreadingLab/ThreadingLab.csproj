@@ -41,9 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConcurrentDict\SalesPerson.cs" />
+    <Compile Include="ConcurrentDict\StockController.cs" />
     <Compile Include="Models\BankAccount.cs" />
     <Compile Include="Models\Deposit.cs" />
     <Compile Include="Models\Person.cs" />
+    <Compile Include="ProgramConcurrentDict.cs" />
     <Compile Include="ProgramMapReduce.cs" />
     <Compile Include="ProgramProducerConsumer.cs" />
     <Compile Include="ProgramLongRunningThreads.cs" />
